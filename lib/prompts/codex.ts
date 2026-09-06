@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import type { CacheMetadata, GitHubRelease } from "../types.js";
 
 const GITHUB_API_RELEASES =
@@ -10,14 +9,12 @@ const GITHUB_HTML_RELEASES =
 	"https://github.com/openai/codex/releases/latest";
 const CACHE_DIR = join(homedir(), ".opencode", "cache");
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 /**
  * Model family type for prompt selection
  * Maps to different system prompts in the Codex CLI
  */
 export type ModelFamily =
+	| "gpt-5.6"
 	| "gpt-5.2-codex"
 	| "codex-max"
 	| "codex"
@@ -29,6 +26,7 @@ export type ModelFamily =
  * Based on codex-rs/core/src/model_family.rs logic
  */
 const PROMPT_FILES: Record<ModelFamily, string> = {
+	"gpt-5.6": "gpt-5.6_prompt.md",
 	"gpt-5.2-codex": "gpt-5.2-codex_prompt.md",
 	"codex-max": "gpt-5.1-codex-max_prompt.md",
 	codex: "gpt_5_codex_prompt.md",
@@ -40,6 +38,7 @@ const PROMPT_FILES: Record<ModelFamily, string> = {
  * Cache file mapping for each model family
  */
 const CACHE_FILES: Record<ModelFamily, string> = {
+	"gpt-5.6": "gpt-5.6-instructions.md",
 	"gpt-5.2-codex": "gpt-5.2-codex-instructions.md",
 	"codex-max": "codex-max-instructions.md",
 	codex: "codex-instructions.md",
@@ -54,6 +53,12 @@ const CACHE_FILES: Record<ModelFamily, string> = {
  */
 export function getModelFamily(normalizedModel: string): ModelFamily {
 	// Order matters - check more specific patterns first
+	if (
+		normalizedModel.includes("gpt-5.6") ||
+		normalizedModel.includes("gpt 5.6")
+	) {
+		return "gpt-5.6";
+	}
 	if (
 		normalizedModel.includes("gpt-5.2-codex") ||
 		normalizedModel.includes("gpt 5.2 codex")
@@ -229,11 +234,11 @@ export async function getCodexInstructions(
 			return readFileSync(cacheFile, "utf8");
 		}
 
-		// Fall back to bundled version (use codex-instructions.md as default)
+			// Fall back to a small embedded prompt so offline startup never fails.
 		console.error(
 			`[openai-codex-plugin] Falling back to bundled instructions for ${modelFamily}`,
 		);
-		return readFileSync(join(__dirname, "codex-instructions.md"), "utf8");
+			return "You are a coding agent. Follow the user's instructions, inspect the repository carefully, make scoped changes, and verify your work.";
 	}
 }
 

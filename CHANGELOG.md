@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here. Dates use the ISO format (YYYY-MM-DD).
 
+## [4.5.0] - 2026-09-06
+
+**Model release**: GPT‑5.6 support and local dev install flag.
+
+### Added
+- **GPT‑5.6 Sol/Terra/Luna models**: full `none/low/medium/high/xhigh/max` reasoning range, config presets (modern variants + legacy), and dedicated Codex CLI prompt/instructions family. `gpt-5.6` aliases to `gpt-5.6-sol`.
+- **`max` reasoning effort**: new tier above `xhigh`, currently exclusive to the GPT‑5.6 family.
+- **`--local` installer flag**: points the generated config at this repository's built `dist/index.js` (via `file://` URL) instead of the published npm package, for testing unreleased changes end-to-end.
+
 ## [4.4.0] - 2026-01-09
 
 **Maintenance release**: OAuth success page version sync.

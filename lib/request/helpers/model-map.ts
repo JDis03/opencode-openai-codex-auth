@@ -12,6 +12,32 @@
  * Value: The normalized model name to send to the API
  */
 export const MODEL_MAP: Record<string, string> = {
+	// ============================================================================
+	// GPT-5.6 Models (none/low/medium/high/xhigh/max)
+	// ============================================================================
+	"gpt-5.6": "gpt-5.6-sol",
+	"gpt-5.6-sol": "gpt-5.6-sol",
+	"gpt-5.6-sol-none": "gpt-5.6-sol",
+	"gpt-5.6-sol-low": "gpt-5.6-sol",
+	"gpt-5.6-sol-medium": "gpt-5.6-sol",
+	"gpt-5.6-sol-high": "gpt-5.6-sol",
+	"gpt-5.6-sol-xhigh": "gpt-5.6-sol",
+	"gpt-5.6-sol-max": "gpt-5.6-sol",
+	"gpt-5.6-terra": "gpt-5.6-terra",
+	"gpt-5.6-terra-none": "gpt-5.6-terra",
+	"gpt-5.6-terra-low": "gpt-5.6-terra",
+	"gpt-5.6-terra-medium": "gpt-5.6-terra",
+	"gpt-5.6-terra-high": "gpt-5.6-terra",
+	"gpt-5.6-terra-xhigh": "gpt-5.6-terra",
+	"gpt-5.6-terra-max": "gpt-5.6-terra",
+	"gpt-5.6-luna": "gpt-5.6-luna",
+	"gpt-5.6-luna-none": "gpt-5.6-luna",
+	"gpt-5.6-luna-low": "gpt-5.6-luna",
+	"gpt-5.6-luna-medium": "gpt-5.6-luna",
+	"gpt-5.6-luna-high": "gpt-5.6-luna",
+	"gpt-5.6-luna-xhigh": "gpt-5.6-luna",
+	"gpt-5.6-luna-max": "gpt-5.6-luna",
+
 // ============================================================================
 // GPT-5.1 Codex Models
 // ============================================================================

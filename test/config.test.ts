@@ -53,6 +53,12 @@ describe('Configuration Parsing', () => {
 	});
 
 		describe('getReasoningConfig', () => {
+			it('should support the full GPT-5.6 reasoning range', () => {
+				expect(getReasoningConfig('gpt-5.6-sol', {}).effort).toBe('medium');
+				expect(getReasoningConfig('gpt-5.6-terra', { reasoningEffort: 'none' }).effort).toBe('none');
+				expect(getReasoningConfig('gpt-5.6-luna', { reasoningEffort: 'max' }).effort).toBe('max');
+			});
+
 			it('should use user settings from merged config for gpt-5-codex', () => {
 				const codexConfig = getModelConfig('gpt-5-codex', userConfig);
 				const reasoningConfig = getReasoningConfig('gpt-5-codex', codexConfig);

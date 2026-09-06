@@ -2,7 +2,7 @@
 
 import { existsSync } from "node:fs";
 import { readFile, writeFile, mkdir, copyFile, rm } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { homedir } from "node:os";
 import { parse, modify, applyEdits, printParseErrorCode } from "jsonc-parser";
@@ -11,7 +11,7 @@ const PLUGIN_NAME = "opencode-openai-codex-auth";
 const args = new Set(process.argv.slice(2));
 
 if (args.has("--help") || args.has("-h")) {
-	console.log(`Usage: ${PLUGIN_NAME} [--modern|--legacy] [--uninstall] [--all] [--dry-run] [--no-cache-clear]\n\n` +
+	console.log(`Usage: ${PLUGIN_NAME} [--modern|--legacy] [--local] [--uninstall] [--all] [--dry-run] [--no-cache-clear]\n\n` +
 		"Default behavior:\n" +
 		"  - Installs/updates global config at ~/.config/opencode/opencode.jsonc (falls back to .json)\n" +
 		"  - Uses modern config (variants) by default\n" +
@@ -20,6 +20,7 @@ if (args.has("--help") || args.has("-h")) {
 		"Options:\n" +
 		"  --modern           Force modern config (default)\n" +
 		"  --legacy           Use legacy config (older OpenCode versions)\n" +
+		"  --local            Load this repository's built dist/index.js instead of npm\n" +
 		"  --uninstall        Remove plugin + OpenAI config entries from global config\n" +
 		"  --all              With --uninstall, also remove tokens, logs, and cached instructions\n" +
 		"  --dry-run          Show actions without writing\n" +
@@ -34,9 +35,12 @@ const uninstallRequested = args.has("--uninstall") || args.has("--all");
 const uninstallAll = args.has("--all");
 const dryRun = args.has("--dry-run");
 const skipCacheClear = args.has("--no-cache-clear");
+const localRequested = args.has("--local");
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
+const localPluginSpec = pathToFileURL(join(repoRoot, "dist", "index.js")).href;
+const pluginSpec = localRequested ? localPluginSpec : PLUGIN_NAME;
 const templatePath = join(
 	repoRoot,
 	"config",
@@ -69,13 +73,14 @@ function normalizePluginList(list) {
 		if (typeof entry !== "string") return true;
 		return entry !== PLUGIN_NAME && !entry.startsWith(`${PLUGIN_NAME}@`);
 	});
-	return [...filtered, PLUGIN_NAME];
+	return [...filtered.filter((entry) => entry !== localPluginSpec), pluginSpec];
 }
 
 function removePluginEntries(list) {
 	const entries = Array.isArray(list) ? list.filter(Boolean) : [];
 	return entries.filter((entry) => {
 		if (typeof entry !== "string") return true;
+		if (entry === localPluginSpec) return false;
 		if (entry === PLUGIN_NAME || entry.startsWith(`${PLUGIN_NAME}@`)) {
 			return false;
 		}
@@ -369,7 +374,7 @@ async function main() {
 	}
 
 	const template = await readJson(templatePath);
-	template.plugin = [PLUGIN_NAME];
+	template.plugin = [pluginSpec];
 
 	let nextConfig = template;
 	let nextContent = null;

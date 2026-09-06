@@ -56,6 +56,9 @@ describe('Install script', () => {
 		expect(data.provider.openai.timeout).toBe(60000);
 		expect(data.provider.openai.models['custom-model']).toBeDefined();
 		expect(data.provider.openai.models['gpt-5.2']).toBeDefined();
+		expect(data.provider.openai.models['gpt-5.6-sol']).toBeDefined();
+		expect(data.provider.openai.models['gpt-5.6-terra']).toBeDefined();
+		expect(data.provider.openai.models['gpt-5.6-luna']).toBeDefined();
 	});
 
 	it('prefers JSONC when both jsonc and json exist', () => {
@@ -87,6 +90,17 @@ describe('Install script', () => {
 		expect(existsSync(configPath)).toBe(true);
 		const { data } = readJsoncFile(configPath);
 		expect(data.plugin).toContain('opencode-openai-codex-auth');
+	});
+
+	it('can install the current repository build as a local plugin', () => {
+		const homeDir = makeHome();
+		const configPath = writeConfig(homeDir, 'opencode.json', '{ "plugin": ["opencode-openai-codex-auth@4.4.0"] }');
+
+		runInstaller(['--local', '--no-cache-clear'], homeDir);
+
+		const { data } = readJsoncFile(configPath);
+		expect(data.plugin).toContain(`file://${resolve(process.cwd(), 'dist', 'index.js')}`);
+		expect(data.plugin).not.toContain('opencode-openai-codex-auth@4.4.0');
 	});
 
 	it('uninstall removes plugin models but keeps custom config', () => {

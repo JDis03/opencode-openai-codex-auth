@@ -46,6 +46,13 @@ describe('Request Transformer Module', () => {
 
 		// Codex CLI preset name tests - legacy gpt-5 models now map to gpt-5.1
 		describe('Codex CLI preset names', () => {
+			it('should normalize GPT-5.6 tiers and variants', async () => {
+				expect(normalizeModel('gpt-5.6')).toBe('gpt-5.6-sol');
+				expect(normalizeModel('gpt-5.6-sol-max')).toBe('gpt-5.6-sol');
+				expect(normalizeModel('openai/gpt-5.6-terra-high')).toBe('gpt-5.6-terra');
+				expect(normalizeModel('GPT 5.6 Luna Low')).toBe('gpt-5.6-luna');
+			});
+
 			it('should normalize all gpt-5-codex presets to gpt-5.1-codex', async () => {
 				expect(normalizeModel('gpt-5-codex-low')).toBe('gpt-5.1-codex');
 				expect(normalizeModel('gpt-5-codex-medium')).toBe('gpt-5.1-codex');
@@ -905,6 +912,20 @@ describe('Request Transformer Module', () => {
 			const result = await transformRequestBody(body, codexInstructions);
 			expect(result.model).toBe('gpt-5.2-codex');
 			expect(result.reasoning?.effort).toBe('high');
+		});
+
+		it('should send GPT-5.6 tier names and max effort unchanged', async () => {
+			const body: RequestBody = {
+				model: 'gpt-5.6-terra',
+				input: [],
+			};
+			const userConfig: UserConfig = {
+				global: { reasoningEffort: 'max' },
+				models: {},
+			};
+			const result = await transformRequestBody(body, codexInstructions, userConfig);
+			expect(result.model).toBe('gpt-5.6-terra');
+			expect(result.reasoning?.effort).toBe('max');
 		});
 
 		it('should preserve xhigh for codex-max when requested', async () => {
