@@ -46,6 +46,13 @@ describe('Request Transformer Module', () => {
 
 		// Codex CLI preset name tests - legacy gpt-5 models now map to gpt-5.1
 		describe('Codex CLI preset names', () => {
+			it('should normalize GPT-6 Astra and its bare-version alias', async () => {
+				expect(normalizeModel('gpt-6-astra')).toBe('gpt-6-astra');
+				expect(normalizeModel('gpt-6')).toBe('gpt-6-astra');
+				expect(normalizeModel('gpt-6-astra-xhigh')).toBe('gpt-6-astra');
+				expect(normalizeModel('openai/gpt-6-astra-max')).toBe('gpt-6-astra');
+			});
+
 			it('should normalize GPT-5.6 tiers and variants', async () => {
 				expect(normalizeModel('gpt-5.6')).toBe('gpt-5.6-sol');
 				expect(normalizeModel('gpt-5.6-sol-max')).toBe('gpt-5.6-sol');

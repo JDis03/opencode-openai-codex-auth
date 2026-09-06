@@ -69,6 +69,7 @@ describe('Model Registry', () => {
 			const ids = new Set(registry.map((e) => e.id));
 			expect(ids).toEqual(
 				new Set([
+					'gpt-6-astra',
 					'gpt-5.6-sol',
 					'gpt-5.6-terra',
 					'gpt-5.6-luna',
@@ -80,6 +81,16 @@ describe('Model Registry', () => {
 					'gpt-5.1',
 				]),
 			);
+		});
+
+		it('resolves GPT-6 Astra (verified live against the ChatGPT Codex backend)', () => {
+			expect(lookupModelRegistryEntry('gpt-6-astra')?.id).toBe('gpt-6-astra');
+			// Bare "gpt-6" is a convenience alias — the raw API rejects it directly.
+			expect(lookupModelRegistryEntry('gpt-6')?.id).toBe('gpt-6-astra');
+			expect(lookupModelRegistryEntry('gpt-6-astra')?.capabilities).toEqual({
+				xhigh: true,
+				max: true,
+			});
 		});
 
 		it('never calls fetch when no remote registry URL is configured', () => {

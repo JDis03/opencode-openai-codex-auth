@@ -53,6 +53,14 @@ describe('Configuration Parsing', () => {
 	});
 
 		describe('getReasoningConfig', () => {
+			it('should support GPT-6 Astra reasoning (low/medium/high/xhigh/max, no none)', () => {
+				expect(getReasoningConfig('gpt-6-astra', {}).effort).toBe('high');
+				expect(getReasoningConfig('gpt-6-astra', { reasoningEffort: 'max' }).effort).toBe('max');
+				expect(getReasoningConfig('gpt-6-astra', { reasoningEffort: 'xhigh' }).effort).toBe('xhigh');
+				// The live API rejects "none" for this model; we upgrade to "low".
+				expect(getReasoningConfig('gpt-6-astra', { reasoningEffort: 'none' }).effort).toBe('low');
+			});
+
 			it('should support the full GPT-5.6 reasoning range', () => {
 				expect(getReasoningConfig('gpt-5.6-sol', {}).effort).toBe('medium');
 				expect(getReasoningConfig('gpt-5.6-terra', { reasoningEffort: 'none' }).effort).toBe('none');

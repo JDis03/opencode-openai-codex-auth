@@ -84,6 +84,7 @@ Both configs provide:
 
 Both configs provide access to the same model families:
 
+- **gpt-6-astra** (low/medium/high/xhigh/max) - Newest flagship (`gpt-6` alias); does **not** support `none`
 - **gpt-5.6-sol** (none/low/medium/high/xhigh/max) - Flagship tier (`gpt-5.6` alias)
 - **gpt-5.6-terra** (none/low/medium/high/xhigh/max) - Balanced tier
 - **gpt-5.6-luna** (none/low/medium/high/xhigh/max) - Efficient tier

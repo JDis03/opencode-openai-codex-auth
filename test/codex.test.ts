@@ -3,6 +3,12 @@ import { getModelFamily } from "../lib/prompts/codex.js";
 
 describe("Codex Module", () => {
 	describe("getModelFamily", () => {
+		describe("GPT-6 Astra", () => {
+			it("reuses the gpt-5.2 prompt family (no dedicated gpt-6 prompt upstream yet)", () => {
+				expect(getModelFamily("gpt-6-astra")).toBe("gpt-5.2");
+			});
+		});
+
 		describe("GPT-5.6 family", () => {
 			it("should use the shared GPT-5.6 prompt family for every tier", () => {
 				expect(getModelFamily("gpt-5.6-sol")).toBe("gpt-5.6");

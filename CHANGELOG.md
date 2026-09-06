@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here. Dates use the ISO format (YYYY-MM-DD).
 
+## [4.7.0] - 2026-09-06
+
+**Model release**: GPT‑6 Astra — first model added purely through the new registry.
+
+### Added
+- **gpt-6-astra**: new flagship model. Added as a single entry in `lib/request/helpers/model-registry-data.ts` (no changes needed to `request-transformer.ts` or `codex.ts` logic), plus config presets and a `gpt-6` convenience alias.
+  - **Verified live** against the ChatGPT Codex backend (not guessed): `gpt-6-astra` is the real API model id — bare `gpt-6` is rejected by the API directly but works here as an alias. Confirmed reasoning support is `low`/`medium`/`high`/`xhigh`/`max` (**no** `none` — the API's own error message enumerates the supported values when `none` is rejected).
+  - Reuses the `gpt-5.2` Codex CLI prompt family, since `openai/codex` has not published a dedicated `gpt-6` prompt file yet (checked release `rust-v0.153.4`). Context/output limits in the config presets are provisional (borrowed from `gpt-5.2`) pending official numbers.
+
 ## [4.6.0] - 2026-09-06
 
 **Maintainability release**: data-driven model registry.

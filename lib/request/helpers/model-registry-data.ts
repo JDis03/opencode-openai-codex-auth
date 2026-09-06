@@ -96,6 +96,38 @@ export interface ModelRegistryEntry {
  */
 export const BUNDLED_MODEL_REGISTRY: ModelRegistryEntry[] = [
 	// ============================================================================
+	// GPT-6 Astra (low/medium/high/xhigh/max — no "none")
+	// ============================================================================
+	{
+		id: "gpt-6-astra",
+		aliases: [
+			"gpt-6-astra",
+			"gpt-6",
+			"gpt-6-astra-low",
+			"gpt-6-astra-medium",
+			"gpt-6-astra-high",
+			"gpt-6-astra-xhigh",
+			"gpt-6-astra-max",
+		],
+		// openai/codex has not published a dedicated gpt-6 prompt file yet
+		// (checked release rust-v0.153.4: codex-rs/core has no gpt-6* prompt).
+		// Reuses the gpt-5.2 general-purpose prompt family until one exists.
+		family: "gpt-5.2",
+		capabilities: { xhigh: true, max: true },
+		defaultEffort: "high",
+		note:
+			"Verified live against the ChatGPT Codex backend (2026-09-06): " +
+			"'gpt-6-astra' is the real API model id — bare 'gpt-6' is REJECTED " +
+			"by the API ({\"detail\":\"The 'gpt-6' model is not supported...\"}) " +
+			"but is kept here as a convenience alias, same as 'gpt-5.6' -> sol. " +
+			"Supported reasoning efforts confirmed via the API's own error " +
+			"message when 'none' was rejected: \"Supported values are: 'low', " +
+			"'medium', 'high', 'xhigh', and 'max'.\" Context/output limits in " +
+			"the config presets are provisional (borrowed from gpt-5.2) — " +
+			"OpenAI hasn't published official numbers for this model yet.",
+	},
+
+	// ============================================================================
 	// GPT-5.6 (none/low/medium/high/xhigh/max)
 	// ============================================================================
 	{
