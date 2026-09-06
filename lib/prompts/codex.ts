@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { lookupModelRegistryEntry } from "../request/helpers/model-registry.js";
 import type { CacheMetadata, GitHubRelease } from "../types.js";
 
 const GITHUB_API_RELEASES =
@@ -52,6 +53,18 @@ const CACHE_FILES: Record<ModelFamily, string> = {
  * @returns The model family for prompt selection
  */
 export function getModelFamily(normalizedModel: string): ModelFamily {
+	// Prefer the model registry (bundled + optional remote overlay) — see
+	// lib/request/helpers/model-registry-data.ts. A new model that reuses an
+	// existing prompt family (the common case) needs only a registry entry;
+	// this hardcoded chain remains as a fallback and as the place to add a
+	// genuinely new prompt family (which also requires a new PROMPT_FILES /
+	// CACHE_FILES entry above, since that requires knowing the actual
+	// upstream instructions filename).
+	const registryEntry = lookupModelRegistryEntry(normalizedModel);
+	if (registryEntry) {
+		return registryEntry.family;
+	}
+
 	// Order matters - check more specific patterns first
 	if (
 		normalizedModel.includes("gpt-5.6") ||

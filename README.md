@@ -59,8 +59,28 @@ npx -y opencode-openai-codex-auth@latest --uninstall --all
 
 Minimal configs are not supported for GPT‑5.x; use the full configs above.
 ---
+## 🔄 Model Registry (maintainer notes)
+Model normalization, reasoning capabilities, and prompt-family selection are
+driven by a single data file: `lib/request/helpers/model-registry-data.ts`.
+Adding support for a new OpenAI model is normally **one entry in that file**,
+not a plugin-wide patch.
+
+For even faster turnaround (no npm release required to get a brand-new model
+recognized), point the plugin at a JSON overlay hosted anywhere you control:
+```json
+// ~/.opencode/openai-codex-auth-config.json
+{ "codexMode": true, "modelRegistryUrl": "https://raw.githubusercontent.com/<you>/<repo>/main/model-registry.json" }
+```
+or via `OPENCODE_CODEX_MODEL_REGISTRY_URL` (env var takes precedence). The
+overlay is fetched with ETag caching (checked at most every 15 minutes) and
+merged with the bundled registry; it's entirely opt-in — nothing is fetched
+unless you configure a URL, and any failure silently falls back to the
+bundled defaults.
+---
 ## ✅ Features
 - ChatGPT Plus/Pro OAuth authentication (official flow)
+- Data-driven model registry: new models add cleanly, with an optional
+  self-hosted JSON overlay for instant updates between releases
 - GPT‑5.6 Sol/Terra/Luna support, including `max` reasoning effort
 - Variant system support (v1.0.210+) + legacy presets
 - Multimodal input enabled for all models

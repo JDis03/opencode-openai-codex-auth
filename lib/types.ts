@@ -9,6 +9,17 @@ export interface PluginConfig {
 	 * @default true
 	 */
 	codexMode?: boolean;
+	/**
+	 * Optional URL to a remotely-hosted model registry overlay (JSON array of
+	 * ModelRegistryEntry objects — see lib/request/helpers/model-registry-data.ts).
+	 * When set, the plugin periodically (every 15 min, ETag-cached) checks this
+	 * URL for updates and merges them with the bundled model registry, so a
+	 * maintainer can ship recognition for a new model without a full npm
+	 * release. Opt-in only — unset by default. Can also be set via the
+	 * OPENCODE_CODEX_MODEL_REGISTRY_URL environment variable, which takes
+	 * precedence over this field.
+	 */
+	modelRegistryUrl?: string;
 }
 
 /**

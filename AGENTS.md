@@ -68,6 +68,9 @@ The main entry point orchestrates a **7-step fetch flow**:
 - `fetch-helpers.ts`: 10 focused helper functions for main fetch flow
 - `request-transformer.ts`: Body transformations (model normalization, reasoning config, input filtering)
 - `response-handler.ts`: SSE to JSON conversion
+- `helpers/model-map.ts`: Static, frozen exact-alias map for currently-shipped presets (fast path)
+- `helpers/model-registry-data.ts`: **Single source of truth** for model normalization, reasoning capabilities, and prompt family — add new models here
+- `helpers/model-registry.ts`: Registry lookup/merge + optional ETag-cached remote overlay (opt-in, see "Model Registry" pattern below)
 
 **Prompts** (`lib/prompts/`)
 - `codex.ts`: Fetches Codex instructions from GitHub (ETag-cached), tool remap message
@@ -119,7 +122,13 @@ The main entry point orchestrates a **7-step fetch flow**:
   - `gpt-5.1*` → `gpt_5_1_prompt.md` (368 lines, full behavioral guidance)
 - `getModelFamily()` determines prompt selection based on normalized model
 
-**6. Codex Instructions Caching**:
+**6. Model Registry** (data-driven model knowledge):
+- `lib/request/helpers/model-registry-data.ts` is the single source of truth for which model families the plugin knows about: canonical API id, accepted preset aliases, reasoning capabilities (`none`/`xhigh`/`max` support), default effort, and Codex CLI prompt family.
+- `normalizeModel()`, `getReasoningConfig()`, and `getModelFamily()` all consult this registry (via `lib/request/helpers/model-registry.ts`) before falling back to legacy hardcoded pattern-matching, so most new models require **one array entry**, not edits across `model-map.ts`, `request-transformer.ts`, and `codex.ts`.
+- Optional, opt-in remote overlay: set `modelRegistryUrl` (plugin config) or `OPENCODE_CODEX_MODEL_REGISTRY_URL` (env var, takes precedence) to an HTTPS URL serving a JSON array of `ModelRegistryEntry` objects. It's ETag-cached (15 min TTL, same pattern as Codex instructions below) and merged with the bundled registry in the background — never blocks a request, never called unless configured, and silently falls back to bundled defaults on any failure. This lets an active maintainer ship recognition for a brand-new model without a full npm release.
+- `lib/request/helpers/model-map.ts` remains as a static, frozen exact-alias map for currently-shipped presets (fast path, kept for backwards compatibility); it is not the place to add new models going forward.
+
+**7. Codex Instructions Caching**:
 - Fetches from latest release tag (not main branch)
 - ETag-based HTTP conditional requests per model family
 - Separate cache files per family: `gpt-5.2-codex-instructions.md`, `codex-max-instructions.md`, `codex-instructions.md`, `gpt-5.2-instructions.md`, `gpt-5.1-instructions.md`
@@ -127,6 +136,16 @@ The main entry point orchestrates a **7-step fetch flow**:
 - Falls back to bundled version if GitHub unavailable
 
 ## Development Patterns
+
+### Adding a New Model
+
+1. Add one entry to `BUNDLED_MODEL_REGISTRY` in `lib/request/helpers/model-registry-data.ts` (canonical `id`, `aliases`, `family`, `capabilities`, `defaultEffort`). This alone wires up `normalizeModel()`, `getReasoningConfig()`, and `getModelFamily()`.
+2. If the model reuses an existing Codex CLI prompt family (the common case), you're done with the TypeScript side. If it needs a genuinely new prompt family, also add a `ModelFamily` union member + `PROMPT_FILES`/`CACHE_FILES` entries in `lib/prompts/codex.ts` (this requires knowing the actual instructions filename shipped in the `openai/codex` GitHub release).
+3. Add user-facing presets to `config/opencode-modern.json` and `config/opencode-legacy.json` (display name, context/output limits, per-effort variants) — the registry intentionally does not duplicate this human-facing metadata.
+4. Add tests: at minimum, `normalizeModel()` and `getReasoningConfig()` cases in `test/request-transformer.test.ts` (or `test/model-registry.test.ts` for registry-specific behavior) and a `getModelFamily()` case in `test/codex.test.ts` if a new family was added.
+5. Update the model tables in `README.md` and `config/README.md`, and add a `CHANGELOG.md` entry.
+
+For urgent/interim support ahead of a full release, an active maintainer can instead publish a JSON overlay (array of `ModelRegistryEntry`) and point users at it via `modelRegistryUrl` / `OPENCODE_CODEX_MODEL_REGISTRY_URL` — see the "Model Registry" pattern above.
 
 ### Adding New Configuration Options
 
@@ -179,6 +198,7 @@ This plugin **intentionally differs from opencode defaults** because it accesses
   - `codex-instructions-meta.json` (ETag + release tag for Codex instructions)
   - `opencode-codex.txt` (OpenCode system prompt from GitHub, for verification)
   - `opencode-codex-meta.json` (ETag for OpenCode prompt)
+  - `model-registry-overlay.json` / `model-registry-overlay-meta.json` (cached remote model registry overlay, only written when `modelRegistryUrl`/`OPENCODE_CODEX_MODEL_REGISTRY_URL` is configured)
 - **Debug logs**: `~/.opencode/logs/codex-plugin/` (when `ENABLE_PLUGIN_REQUEST_LOGGING=1`)
 - **OAuth callback**: `http://localhost:1455/auth/callback`
 
@@ -186,6 +206,7 @@ This plugin **intentionally differs from opencode defaults** because it accesses
 
 - `CODEX_MODE`: Override config file (1=enable, 0=disable)
 - `ENABLE_PLUGIN_REQUEST_LOGGING`: Enable detailed request logging (1=enable)
+- `OPENCODE_CODEX_MODEL_REGISTRY_URL`: HTTPS URL to a remote model registry overlay JSON (takes precedence over the `modelRegistryUrl` config field); opt-in, unset by default
 
 ## TypeScript Configuration
 

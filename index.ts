@@ -34,6 +34,7 @@ import {
 import { openBrowserUrl } from "./lib/auth/browser.js";
 import { startLocalOAuthServer } from "./lib/auth/server.js";
 import { getCodexMode, loadPluginConfig } from "./lib/config.js";
+import { configureModelRegistrySource } from "./lib/request/helpers/model-registry.js";
 import {
 	AUTH_LABELS,
 	CODEX_BASE_URL,
@@ -140,6 +141,10 @@ export const OpenAIAuthPlugin: Plugin = async ({ client }: PluginInput) => {
 				// Priority: CODEX_MODE env var > config file > default (true)
 				const pluginConfig = loadPluginConfig();
 				const codexMode = getCodexMode(pluginConfig);
+
+				// Opt-in: if a remote model registry overlay URL is configured,
+				// enable periodic background refresh (never blocks a request).
+				configureModelRegistrySource(pluginConfig.modelRegistryUrl);
 
 				// Return SDK configuration
 				return {

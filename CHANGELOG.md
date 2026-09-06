@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. Dates use the ISO format (YYYY-MM-DD).
 
+## [4.6.0] - 2026-09-06
+
+**Maintainability release**: data-driven model registry.
+
+### Added
+- **Model registry** (`lib/request/helpers/model-registry-data.ts`): single source of truth for model normalization, reasoning capabilities (`none`/`xhigh`/`max` support), default effort, and Codex CLI prompt family. `normalizeModel()`, `getReasoningConfig()`, and `getModelFamily()` now consult it first, falling back to the previous hardcoded pattern-matching only for names the registry doesn't recognize. Adding a new model family now typically means one array entry instead of edits across `model-map.ts`, `request-transformer.ts`, and `codex.ts`.
+- **Optional remote registry overlay**: `modelRegistryUrl` (plugin config) or `OPENCODE_CODEX_MODEL_REGISTRY_URL` (env var) lets a maintainer host a JSON overlay of `ModelRegistryEntry` objects that the plugin merges in automatically (ETag-cached, checked at most every 15 minutes, background-refreshed so it never blocks a request). Fully opt-in — no network call is made unless configured, and any failure silently falls back to the bundled registry.
+- **Tests**: new `test/model-registry.test.ts` (12 cases) covering bundled lookups, registry-driven normalization/reasoning/prompt-family selection, and the remote overlay (success, network failure, malformed payload, and disabled-by-default behavior).
+
+### Changed
+- `getReasoningConfig()`'s hardcoded capability derivation was extracted into `deriveLegacyReasoningFlags()` and now only runs as a fallback when a model isn't found in the registry — behavior is unchanged for every existing model (verified by the full pre-existing test suite passing unmodified).
+
 ## [4.5.0] - 2026-09-06
 
 **Model release**: GPT‑5.6 support and local dev install flag.

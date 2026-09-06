@@ -3,6 +3,7 @@ import { TOOL_REMAP_MESSAGE } from "../prompts/codex.js";
 import { CODEX_OPENCODE_BRIDGE } from "../prompts/codex-opencode-bridge.js";
 import { getOpenCodeCodexPrompt } from "../prompts/opencode-codex.js";
 import { getNormalizedModel } from "./helpers/model-map.js";
+import { lookupModelRegistryEntry } from "./helpers/model-registry.js";
 import {
 	filterOpenCodeSystemPromptsWithCachedPrompt,
 	normalizeOrphanedToolOutputs,
@@ -41,9 +42,19 @@ export function normalizeModel(model: string | undefined): string {
 		return mappedModel;
 	}
 
-	// Fallback: Pattern-based matching for unknown/custom model names
-	// This preserves backwards compatibility with old verbose names
-	// like "GPT 5 Codex Low (ChatGPT Subscription)"
+	// Try the model registry (bundled defaults + optional remote overlay).
+	// This is the preferred place to add support for a brand-new model
+	// family — see lib/request/helpers/model-registry-data.ts — so most new
+	// models never need to touch the pattern-matching fallback below at all.
+	const registryEntry = lookupModelRegistryEntry(modelId);
+	if (registryEntry) {
+		return registryEntry.id;
+	}
+
+	// Last-resort fallback: generic pattern-based matching for names that are
+	// in neither the static map nor the registry (e.g. brand-new/unregistered
+	// custom model strings). This preserves backwards compatibility with old
+	// verbose names like "GPT 5 Codex Low (ChatGPT Subscription)".
 	const normalized = modelId.toLowerCase();
 
 	// Priority order for pattern matching (most specific first):
@@ -211,10 +222,28 @@ function resolveInclude(modelConfig: ConfigOptions, body: RequestBody): string[]
  * @param userConfig - User configuration object
  * @returns Reasoning configuration
  */
-export function getReasoningConfig(
+/**
+ * Reasoning capability flags used to compute the final effort value.
+ * Derived either from the model registry (preferred) or from the legacy
+ * pattern-matching fallback below.
+ */
+interface ReasoningCapabilityFlags {
+	supportsXhigh: boolean;
+	supportsMax: boolean;
+	supportsNone: boolean;
+	isCodexMini: boolean;
+	defaultEffort: ReasoningConfig["effort"];
+}
+
+/**
+ * Legacy pattern-matching derivation of reasoning capabilities, kept as the
+ * fallback for any model name not present in the model registry (bundled or
+ * remote-overlaid) — see lib/request/helpers/model-registry-data.ts, which is
+ * the preferred place to add support for a new model going forward.
+ */
+function deriveLegacyReasoningFlags(
 	modelName: string | undefined,
-	userConfig: ConfigOptions = {},
-): ReasoningConfig {
+): ReasoningCapabilityFlags {
 	const normalizedName = modelName?.toLowerCase() ?? "";
 	const isGpt56 =
 		normalizedName.includes("gpt-5.6") || normalizedName.includes("gpt 5.6");
@@ -273,6 +302,29 @@ export function getReasoningConfig(
 				: isLightweight
 					? "minimal"
 					: "medium";
+
+	return { supportsXhigh, supportsMax, supportsNone, isCodexMini, defaultEffort };
+}
+
+export function getReasoningConfig(
+	modelName: string | undefined,
+	userConfig: ConfigOptions = {},
+): ReasoningConfig {
+	// Prefer the model registry (bundled + optional remote overlay) — see
+	// lib/request/helpers/model-registry-data.ts. Fall back to legacy
+	// pattern-matching only for names the registry doesn't recognize at all,
+	// so existing/custom model strings keep working exactly as before.
+	const registryEntry = lookupModelRegistryEntry(modelName);
+	const { supportsXhigh, supportsMax, supportsNone, isCodexMini, defaultEffort } =
+		registryEntry
+			? {
+					supportsXhigh: !!registryEntry.capabilities?.xhigh,
+					supportsMax: !!registryEntry.capabilities?.max,
+					supportsNone: !!registryEntry.capabilities?.none,
+					isCodexMini: !!registryEntry.isCodexMini,
+					defaultEffort: registryEntry.defaultEffort,
+				}
+			: deriveLegacyReasoningFlags(modelName);
 
 	// Get user-requested effort
 	let effort = userConfig.reasoningEffort || defaultEffort;
