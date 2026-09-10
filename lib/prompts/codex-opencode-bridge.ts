@@ -121,6 +121,11 @@ If ANY answer is NO → STOP and correct before proceeding.
 - Check your available tools for MCP integrations
 - Use when the tool's functionality matches your task needs
 
+**Skills:**
+- \`skill\` - Load a specialized skill's instructions and resources by name
+- If an \`<available_skills>\` catalog appears later in these instructions, check it for a skill matching the current task before starting non-trivial work
+- Only load a skill whose name is listed in that catalog; don't guess a name
+
 ## What Remains from Codex
  
 Sandbox policies, approval mechanisms, final answer formatting, git commit protocols, and file reference formats all follow Codex instructions. In approval policy "never", never request escalations.

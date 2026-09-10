@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here. Dates use the ISO format (YYYY-MM-DD).
 
+## [4.8.0] - 2026-09-10
+
+**Quality release**: Codex sessions now get OpenCode's Skills catalog and MCP instructions, matching Anthropic session parity.
+
+### Fixed
+- **`<available_skills>` and `<mcp_instructions>` were silently dropped for every OpenAI OAuth (Codex) session.** OpenCode's `isOpenaiOauth` request path puts its entire system prompt — including both capability blocks — into `body.instructions` instead of `role:"system"` messages (every other provider/auth combo gets the latter). `transformRequestBody()` unconditionally overwrote `body.instructions` with the official Codex CLI instructions, discarding both blocks before Codex ever saw them. Confirmed empirically (not just by reading code) via `ENABLE_PLUGIN_REQUEST_LOGGING=1` against a real session: pre-fix, the final request Codex received had no trace of either block despite opencode generating them; post-fix, a live end-to-end run shows the real `<available_skills>` catalog (3 skills) and `<mcp_instructions>` reaching the ChatGPT backend with a real `HTTP 200` response.
+- **New**: `lib/request/helpers/skill-catalog.ts` — `extractOpenCodeCapabilityBlocks()` captures both blocks before the overwrite (pure regex-based, safe no-op if absent/malformed), `formatPreservedCapabilityBlocks()` re-appends them after the Codex instructions (mcp before skills, matching opencode's own ordering). Strictly additive: identical output when neither block is present, in both `CODEX_MODE` values.
+- **`CODEX_OPENCODE_BRIDGE`** now mentions the `skill` tool, so Codex knows to check the (now-preserved) catalog for a matching skill before starting non-trivial work — it previously omitted this tool entirely from its "Available OpenCode Tools" list.
+- **Tests**: new `test/skill-catalog.test.ts` (15 cases) plus 6 new `transformRequestBody()` scenarios in `test/request-transformer.test.ts` covering both-present, skills-only, mcp-only, absent, and `CODEX_MODE` independence. All 250 pre-existing tests pass unmodified (271/271 total).
+- Full root-cause writeup: `specs/skill-catalog-passthrough.md`.
+
 ## [4.7.0] - 2026-09-06
 
 **Model release**: GPT‑6 Astra — first model added purely through the new registry.

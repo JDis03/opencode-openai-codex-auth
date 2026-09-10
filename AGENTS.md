@@ -71,6 +71,7 @@ The main entry point orchestrates a **7-step fetch flow**:
 - `helpers/model-map.ts`: Static, frozen exact-alias map for currently-shipped presets (fast path)
 - `helpers/model-registry-data.ts`: **Single source of truth** for model normalization, reasoning capabilities, and prompt family — add new models here
 - `helpers/model-registry.ts`: Registry lookup/merge + optional ETag-cached remote overlay (opt-in, see "Model Registry" pattern below)
+- `helpers/skill-catalog.ts`: Extracts/re-injects opencode's `<available_skills>`/`<mcp_instructions>` blocks around the `body.instructions` overwrite (see "OpenCode Capability Block Passthrough" pattern below)
 
 **Prompts** (`lib/prompts/`)
 - `codex.ts`: Fetches Codex instructions from GitHub (ETag-cached), tool remap message
@@ -134,6 +135,12 @@ The main entry point orchestrates a **7-step fetch flow**:
 - Separate cache files per family: `gpt-5.2-codex-instructions.md`, `codex-max-instructions.md`, `codex-instructions.md`, `gpt-5.2-instructions.md`, `gpt-5.1-instructions.md`
 - Cache invalidation when release tag changes
 - Falls back to bundled version if GitHub unavailable
+
+**8. OpenCode Capability Block Passthrough** (Skills + MCP parity with Anthropic sessions):
+- opencode's `isOpenaiOauth` branch (`session/llm/request.ts` in opencode core) puts the *entire* joined system prompt — including the `<available_skills>` catalog and `<mcp_instructions>` block — into `body.instructions` instead of `role:"system"` messages (every other provider/auth combo gets the latter). `transformRequestBody()` used to unconditionally overwrite `body.instructions` with the official Codex CLI instructions, silently discarding both blocks before Codex ever saw them — confirmed empirically via `ENABLE_PLUGIN_REQUEST_LOGGING=1` (real request: `<available_skills>`/`<mcp_instructions>` both present pre-overwrite, absent after).
+- `lib/request/helpers/skill-catalog.ts` extracts both blocks (`extractOpenCodeCapabilityBlocks()`, pure regex-based, safe no-op if absent/malformed) *before* the overwrite, then `transformRequestBody()` re-appends them (`formatPreservedCapabilityBlocks()`) after `codexInstructions`, in the same order opencode uses (mcp before skills). Runs unconditionally (both `CODEX_MODE` values), since the destructive overwrite it patches is itself unconditional.
+- `CODEX_OPENCODE_BRIDGE` (`lib/prompts/codex-opencode-bridge.ts`) mentions the `skill` tool so Codex knows to check the (now-preserved) catalog for a matching skill before starting non-trivial work.
+- See `specs/skill-catalog-passthrough.md` for the full root-cause writeup and design rationale.
 
 ## Development Patterns
 

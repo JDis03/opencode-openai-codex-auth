@@ -1519,6 +1519,92 @@ describe('Request Transformer Module', () => {
 					expect(result.include).toEqual(['reasoning.encrypted_content']);
 				});
 			});
+
+			describe('opencode capability block preservation (specs/skill-catalog-passthrough.md)', () => {
+				const REAL_SKILLS_BLOCK = [
+					'<available_skills>',
+					'  <skill>',
+					'    <name>context7-mcp</name>',
+					'    <description>Use for library/framework docs.</description>',
+					'    <location>/home/dark/.agents/skills/context7-mcp/SKILL.md</location>',
+					'  </skill>',
+					'</available_skills>',
+				].join('\n');
+
+				const REAL_MCP_BLOCK = [
+					'<mcp_instructions>',
+					'You have access to the following MCP servers:',
+					'- context7: library docs',
+					'</mcp_instructions>',
+				].join('\n');
+
+				it('preserves <available_skills> from incoming body.instructions into the final instructions', async () => {
+					const body: RequestBody = {
+						model: 'gpt-5',
+						input: [],
+						instructions: `You are opencode.\n${REAL_SKILLS_BLOCK}`,
+					};
+					const result = await transformRequestBody(body, codexInstructions);
+
+					expect(result.instructions).toContain(codexInstructions);
+					expect(result.instructions).toContain(REAL_SKILLS_BLOCK);
+					expect(result.instructions).toContain('Use the skill tool to load a skill');
+				});
+
+				it('preserves <mcp_instructions> from incoming body.instructions into the final instructions', async () => {
+					const body: RequestBody = {
+						model: 'gpt-5',
+						input: [],
+						instructions: `You are opencode.\n${REAL_MCP_BLOCK}`,
+					};
+					const result = await transformRequestBody(body, codexInstructions);
+
+					expect(result.instructions).toContain(codexInstructions);
+					expect(result.instructions).toContain(REAL_MCP_BLOCK);
+				});
+
+				it('preserves both blocks together, mcp before skills', async () => {
+					const body: RequestBody = {
+						model: 'gpt-5',
+						input: [],
+						instructions: `You are opencode.\n${REAL_MCP_BLOCK}\n${REAL_SKILLS_BLOCK}`,
+					};
+					const result = await transformRequestBody(body, codexInstructions);
+
+					const mcpIndex = result.instructions!.indexOf(REAL_MCP_BLOCK);
+					const skillsIndex = result.instructions!.indexOf(REAL_SKILLS_BLOCK);
+					expect(mcpIndex).toBeGreaterThan(-1);
+					expect(skillsIndex).toBeGreaterThan(mcpIndex);
+				});
+
+				it('is a strict no-op (byte-identical instructions) when neither block is present', async () => {
+					const body: RequestBody = {
+						model: 'gpt-5',
+						input: [],
+						instructions: 'You are opencode. No capability blocks here.',
+					};
+					const result = await transformRequestBody(body, codexInstructions);
+
+					expect(result.instructions).toBe(codexInstructions);
+				});
+
+				it('is a strict no-op when body.instructions is absent entirely', async () => {
+					const body: RequestBody = { model: 'gpt-5', input: [] };
+					const result = await transformRequestBody(body, codexInstructions);
+
+					expect(result.instructions).toBe(codexInstructions);
+				});
+
+				it('behaves identically regardless of CODEX_MODE (unconditional overwrite point)', async () => {
+					const body: RequestBody = {
+						model: 'gpt-5',
+						input: [],
+						instructions: `You are opencode.\n${REAL_SKILLS_BLOCK}`,
+					};
+					const legacyResult = await transformRequestBody(body, codexInstructions, undefined, false);
+					expect(legacyResult.instructions).toContain(REAL_SKILLS_BLOCK);
+				});
+			});
 		});
 	});
 });

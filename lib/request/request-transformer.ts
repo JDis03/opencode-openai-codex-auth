@@ -5,6 +5,10 @@ import { getOpenCodeCodexPrompt } from "../prompts/opencode-codex.js";
 import { getNormalizedModel } from "./helpers/model-map.js";
 import { lookupModelRegistryEntry } from "./helpers/model-registry.js";
 import {
+	extractOpenCodeCapabilityBlocks,
+	formatPreservedCapabilityBlocks,
+} from "./helpers/skill-catalog.js";
+import {
 	filterOpenCodeSystemPromptsWithCachedPrompt,
 	normalizeOrphanedToolOutputs,
 } from "./helpers/input-utils.js";
@@ -533,7 +537,15 @@ export async function transformRequestBody(
 	body.store = false;
 	// Always set stream=true for API - response handling detects original intent
 	body.stream = true;
-	body.instructions = codexInstructions;
+
+	// Preserve opencode's <available_skills>/<mcp_instructions> blocks before
+	// they get overwritten below - see specs/skill-catalog-passthrough.md.
+	// opencode's isOpenaiOauth path puts its full system prompt (including
+	// these capability blocks) into body.instructions instead of role:system
+	// messages, so this is the only place they can be recovered from.
+	const preservedCapabilityBlocks = extractOpenCodeCapabilityBlocks(body.instructions);
+
+	body.instructions = codexInstructions + formatPreservedCapabilityBlocks(preservedCapabilityBlocks);
 
 	// Prompt caching relies on the host providing a stable prompt_cache_key
 	// (OpenCode passes its session identifier). We no longer synthesize one here.

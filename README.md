@@ -87,6 +87,9 @@ bundled defaults.
 - Variant system support (v1.0.210+) + legacy presets
 - Multimodal input enabled for all models
 - Usage‑aware errors + automatic token refresh
+- **Skills + MCP parity with Anthropic sessions**: OpenCode's `<available_skills>`
+  catalog and `<mcp_instructions>` block now reach Codex too, instead of being
+  silently dropped — same capability awareness Claude sessions already had
 ---
 ## 📚 Docs
 - Getting Started: `docs/getting-started.md`
