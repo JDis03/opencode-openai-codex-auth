@@ -367,7 +367,7 @@ npx -y opencode-openai-codex-auth@latest --uninstall --all
 - Bug fixes available
 - Security updates
 
-**Check for updates**: [Releases Page](https://github.com/numman-ali/opencode-openai-codex-auth/releases)
+**Check for updates**: [Releases Page](https://github.com/JDis03/opencode-openai-codex-auth/releases)
 
 **Pro tip**: Subscribe to release notifications on GitHub to get notified of updates.
 

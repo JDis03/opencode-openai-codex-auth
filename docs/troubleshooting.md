@@ -386,7 +386,7 @@ cat ~/.opencode/logs/codex-plugin/request-*-stream-full.json | grep -o '"total_t
    - Config file (redact sensitive info)
 
 3. **Check existing issues:**
-   - [GitHub Issues](https://github.com/numman-ali/opencode-openai-codex-auth/issues)
+   - [GitHub Issues](https://github.com/JDis03/opencode-openai-codex-auth/issues)
 
 ### Reporting Bugs
 

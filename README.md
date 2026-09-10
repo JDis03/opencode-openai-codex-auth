@@ -1,11 +1,12 @@
 ![Image 1: opencode-openai-codex-auth](assets/readme-hero.svg)
   
   
-**Curated by [Numman Ali](https://x.com/nummanali)**
+**Originally created by [Numman Ali](https://x.com/nummanali) · Actively maintained fork by [JDis03](https://github.com/JDis03)**
+
+> 🔀 **Fork notice**: The upstream repo ([numman-ali/opencode-openai-codex-auth](https://github.com/numman-ali/opencode-openai-codex-auth)) has had no commits since **2026-01-09** (v4.4.0) and open PRs/issues are unreviewed. This fork continues active development (new models, the data-driven model registry, bug fixes) under the same MIT license. Full credit to Numman Ali for creating the original project.
+
 [![Twitter Follow](https://img.shields.io/twitter/follow/nummanali?style=social)](https://x.com/nummanali)
-[![npm version](https://img.shields.io/npm/v/opencode-openai-codex-auth.svg)](https://www.npmjs.com/package/opencode-openai-codex-auth)
-[![Tests](https://github.com/numman-ali/opencode-openai-codex-auth/actions/workflows/ci.yml/badge.svg)](https://github.com/numman-ali/opencode-openai-codex-auth/actions)
-[![npm downloads](https://img.shields.io/npm/dm/opencode-openai-codex-auth.svg)](https://www.npmjs.com/package/opencode-openai-codex-auth)
+[![Tests](https://github.com/JDis03/opencode-openai-codex-auth/actions/workflows/ci.yml/badge.svg)](https://github.com/JDis03/opencode-openai-codex-auth/actions)
 **One install. Every Codex model.**
 [Install](#-quick-start) · [Models](#-models) · [Configuration](#-configuration) · [Docs](#-docs)
 

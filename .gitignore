@@ -8,3 +8,5 @@ opencode.json
 .opencode/
 tmp
 .codex-cache
+.memory-project
+progress.md

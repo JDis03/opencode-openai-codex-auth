@@ -7,9 +7,12 @@
   "type": "module",
   "license": "MIT",
   "author": "Numman Ali",
+  "contributors": [
+    "JDis03 (active fork maintainer — https://github.com/JDis03)"
+  ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/numman-ali/opencode-openai-codex-auth.git"
+    "url": "git+https://github.com/JDis03/opencode-openai-codex-auth.git"
   },
   "keywords": [
     "opencode",
@@ -23,9 +26,9 @@
     "chatgpt-plus",
     "chatgpt-pro"
   ],
-  "homepage": "https://github.com/numman-ali/opencode-openai-codex-auth#readme",
+  "homepage": "https://github.com/JDis03/opencode-openai-codex-auth#readme",
   "bugs": {
-    "url": "https://github.com/numman-ali/opencode-openai-codex-auth/issues"
+    "url": "https://github.com/JDis03/opencode-openai-codex-auth/issues"
   },
   "scripts": {
     "build": "tsc && cp lib/oauth-success.html dist/lib/",

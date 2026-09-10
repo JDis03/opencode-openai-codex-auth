@@ -19,7 +19,7 @@
  *
  * @license MIT with Usage Disclaimer (see LICENSE file)
  * @author numman-ali
- * @repository https://github.com/numman-ali/opencode-openai-codex-auth
+ * @repository https://github.com/JDis03/opencode-openai-codex-auth
  */
 
 import type { Plugin, PluginInput } from "@opencode-ai/plugin";
