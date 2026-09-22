@@ -70,6 +70,8 @@ describe('Model Registry', () => {
 			expect(ids).toEqual(
 				new Set([
 					'gpt-6-astra',
+					'gpt-6-sol',
+					'gpt-6-luna',
 					'gpt-5.6-sol',
 					'gpt-5.6-terra',
 					'gpt-5.6-luna',
@@ -91,6 +93,25 @@ describe('Model Registry', () => {
 				xhigh: true,
 				max: true,
 			});
+		});
+
+		it('resolves GPT-6 Sol and Luna (verified live against the ChatGPT Codex backend)', () => {
+			expect(lookupModelRegistryEntry('gpt-6-sol')?.id).toBe('gpt-6-sol');
+			expect(lookupModelRegistryEntry('gpt-6-sol')?.family).toBe('gpt-5.6');
+			expect(lookupModelRegistryEntry('gpt-6-sol')?.capabilities).toEqual({
+				none: true,
+				xhigh: true,
+				max: true,
+			});
+			expect(lookupModelRegistryEntry('gpt-6-luna')?.id).toBe('gpt-6-luna');
+			expect(lookupModelRegistryEntry('gpt-6-luna')?.family).toBe('gpt-5.6');
+			expect(lookupModelRegistryEntry('gpt-6-luna')?.capabilities).toEqual({
+				none: true,
+				xhigh: true,
+				max: true,
+			});
+			expect(normalizeModel('gpt-6-sol-xhigh')).toBe('gpt-6-sol');
+			expect(normalizeModel('openai/gpt-6-luna-max')).toBe('gpt-6-luna');
 		});
 
 		it('never calls fetch when no remote registry URL is configured', () => {

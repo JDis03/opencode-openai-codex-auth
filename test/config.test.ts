@@ -67,6 +67,13 @@ describe('Configuration Parsing', () => {
 				expect(getReasoningConfig('gpt-5.6-luna', { reasoningEffort: 'max' }).effort).toBe('max');
 			});
 
+			it('should support the full GPT-6 Sol/Luna reasoning range (verified live, same tiers as GPT-5.6)', () => {
+				expect(getReasoningConfig('gpt-6-sol', {}).effort).toBe('medium');
+				expect(getReasoningConfig('gpt-6-sol', { reasoningEffort: 'none' }).effort).toBe('none');
+				expect(getReasoningConfig('gpt-6-sol', { reasoningEffort: 'xhigh' }).effort).toBe('xhigh');
+				expect(getReasoningConfig('gpt-6-luna', { reasoningEffort: 'max' }).effort).toBe('max');
+			});
+
 			it('should use user settings from merged config for gpt-5-codex', () => {
 				const codexConfig = getModelConfig('gpt-5-codex', userConfig);
 				const reasoningConfig = getReasoningConfig('gpt-5-codex', codexConfig);

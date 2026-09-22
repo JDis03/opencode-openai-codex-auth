@@ -37,7 +37,7 @@ OpenCode v1.0.210+ introduced a **variants system** that allows defining reasoni
 Both configs provide:
 - ✅ GPT 5.6 Sol/Terra/Luna plus all supported GPT 5.2/5.1 variants
 - ✅ Proper reasoning effort settings for each variant (including `xhigh` for Codex Max/5.2)
-- ✅ Context limits (272k context / 128k output for all Codex families)
+- ✅ GPT 5.6 Sol/Terra/Luna use a 1.05M total window (922k input + 128k output); older Codex families retain their declared limits
 - ✅ Required options: `store: false`, `include: ["reasoning.encrypted_content"]`
 - ✅ Image input support for all models
 - ✅ All required metadata for OpenCode features
@@ -85,6 +85,8 @@ Both configs provide:
 Both configs provide access to the same model families:
 
 - **gpt-6-astra** (low/medium/high/xhigh/max) - Newest flagship (`gpt-6` alias); does **not** support `none`
+- **gpt-6-sol** (none/low/medium/high/xhigh/max) - GPT-6 flagship tier
+- **gpt-6-luna** (none/low/medium/high/xhigh/max) - GPT-6 efficient tier
 - **gpt-5.6-sol** (none/low/medium/high/xhigh/max) - Flagship tier (`gpt-5.6` alias)
 - **gpt-5.6-terra** (none/low/medium/high/xhigh/max) - Balanced tier
 - **gpt-5.6-luna** (none/low/medium/high/xhigh/max) - Efficient tier

@@ -37,11 +37,36 @@ describe('Request Transformer Module', () => {
 
 		it('should return gpt-5.1 as default for unknown models', async () => {
 			expect(normalizeModel('unknown-model')).toBe('gpt-5.1');
+			// "gpt-4" is an older/legacy family (lower version than everything this
+			// plugin's fallback chain knows about) — it intentionally keeps
+			// normalizing forward to gpt-5.1, unlike the "newer than known"
+			// safety-net case covered below.
 			expect(normalizeModel('gpt-4')).toBe('gpt-5.1');
 		});
 
 		it('should return gpt-5.1 for undefined', async () => {
 			expect(normalizeModel(undefined)).toBe('gpt-5.1');
+		});
+
+		it('should pass through an unrecognized model whose version is NEWER than anything known, instead of silently downgrading it to gpt-5.1', async () => {
+			// This is the exact bug class that motivated the safety net: before
+			// gpt-6-sol/gpt-6-luna were added to the registry, selecting them
+			// (already possible via opencode's models.dev-driven catalog) would
+			// have silently rewritten the request to gpt-5.1 with no error at
+			// all. Any future "gpt-N[.M]-something" this plugin has never heard
+			// of should be sent through unchanged instead, and let the real
+			// Codex backend accept or reject it.
+			expect(normalizeModel('gpt-7-nova')).toBe('gpt-7-nova');
+			expect(normalizeModel('gpt-6-nova')).toBe('gpt-6-nova');
+			expect(normalizeModel('gpt-8.3-nova-high')).toBe('gpt-8.3-nova-high');
+			expect(normalizeModel('openai/gpt-9-omega')).toBe('gpt-9-omega');
+			// A known-but-newer-than-registered *minor* version of an existing
+			// major family still routes to the nearest known base alias, same
+			// as today's "gpt-5.6-nova" -> "gpt-5.6-sol" behavior — only
+			// versions strictly ABOVE the highest one this plugin knows about
+			// (5.6, since gpt-6.x has no fallback pattern at all) hit the
+			// passthrough branch.
+			expect(normalizeModel('gpt-5.6-nova')).toBe('gpt-5.6-sol');
 		});
 
 		// Codex CLI preset name tests - legacy gpt-5 models now map to gpt-5.1

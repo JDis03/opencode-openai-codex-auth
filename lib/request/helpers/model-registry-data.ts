@@ -128,6 +128,57 @@ export const BUNDLED_MODEL_REGISTRY: ModelRegistryEntry[] = [
 	},
 
 	// ============================================================================
+	// GPT-6 Sol / Luna (none/low/medium/high/xhigh/max) — reuses the gpt-5.6
+	// prompt family, same behavior/effort tiers as gpt-5.6-sol/terra/luna.
+	// ============================================================================
+	{
+		id: "gpt-6-sol",
+		aliases: [
+			"gpt-6-sol",
+			"gpt-6-sol-none",
+			"gpt-6-sol-low",
+			"gpt-6-sol-medium",
+			"gpt-6-sol-high",
+			"gpt-6-sol-xhigh",
+			"gpt-6-sol-max",
+		],
+		family: "gpt-5.6",
+		capabilities: { none: true, xhigh: true, max: true },
+		defaultEffort: "medium",
+		note:
+			"Verified live against the ChatGPT Codex backend (2026-09-22): " +
+			"'gpt-6-sol' is a real API model id (HTTP 200 for a bare probe, plus " +
+			"HTTP 200 for reasoning.effort = none/minimal/low/medium/high/xhigh/max, " +
+			"confirmed via the same methodology as gpt-6-astra). openai/codex has " +
+			"not published a dedicated gpt-6 prompt file yet (checked release " +
+			"rust-v0.156.0: codex-rs/core still only has 5.1/5.1-codex-max/5.2/" +
+			"5.2-codex prompt files) — reuses the gpt-5.6 prompt family. Context " +
+			"window (1,050,000 / 922,000 input / 128,000 output) confirmed via " +
+			"models.dev's public catalog, not guessed.",
+	},
+	{
+		id: "gpt-6-luna",
+		aliases: [
+			"gpt-6-luna",
+			"gpt-6-luna-none",
+			"gpt-6-luna-low",
+			"gpt-6-luna-medium",
+			"gpt-6-luna-high",
+			"gpt-6-luna-xhigh",
+			"gpt-6-luna-max",
+		],
+		family: "gpt-5.6",
+		capabilities: { none: true, xhigh: true, max: true },
+		defaultEffort: "medium",
+		note:
+			"Verified live against the ChatGPT Codex backend (2026-09-22), same " +
+			"methodology and same result as gpt-6-sol (see its note): real API " +
+			"model id, full none/minimal/low/medium/high/xhigh/max reasoning " +
+			"range, reuses the gpt-5.6 prompt family, 1,050,000 context window " +
+			"confirmed via models.dev.",
+	},
+
+	// ============================================================================
 	// GPT-5.6 (none/low/medium/high/xhigh/max)
 	// ============================================================================
 	{

@@ -45,6 +45,8 @@ npx -y opencode-openai-codex-auth@latest --uninstall --all
 ---
 ## 📦 Models
 - **gpt-6-astra** (low/medium/high/xhigh/max; `gpt-6` alias) — no `none` support
+- **gpt-6-sol** (none/low/medium/high/xhigh/max)
+- **gpt-6-luna** (none/low/medium/high/xhigh/max)
 - **gpt-5.6-sol** (none/low/medium/high/xhigh/max; `gpt-5.6` alias)
 - **gpt-5.6-terra** (none/low/medium/high/xhigh/max)
 - **gpt-5.6-luna** (none/low/medium/high/xhigh/max)

@@ -30,6 +30,35 @@ const writeConfig = (homeDir: string, file: string, content: string) => {
 };
 
 describe('Install script', () => {
+	it('declares the full 1.05M input window in both config templates for every GPT-5.6/GPT-6 preset', () => {
+		const modern = JSON.parse(
+			readFileSync(resolve(process.cwd(), 'config', 'opencode-modern.json'), 'utf-8'),
+		);
+		const legacy = JSON.parse(
+			readFileSync(resolve(process.cwd(), 'config', 'opencode-legacy.json'), 'utf-8'),
+		);
+		const expectedLimit = { context: 1_050_000, input: 922_000, output: 128_000 };
+
+		// gpt-6-astra, gpt-6-sol, gpt-6-luna: confirmed via models.dev's public
+		// catalog (2026-09-22) to share the same 1.05M context window as
+		// gpt-5.6-sol/terra/luna, not a guess.
+		for (const modelID of [
+			'gpt-6-astra',
+			'gpt-6-sol',
+			'gpt-6-luna',
+			'gpt-5.6-sol',
+			'gpt-5.6-terra',
+			'gpt-5.6-luna',
+		]) {
+			expect(modern.provider.openai.models[modelID].limit).toEqual(expectedLimit);
+		}
+
+		for (const [modelID, model] of Object.entries(legacy.provider.openai.models) as Array<[string, any]>) {
+			if (!modelID.startsWith('gpt-6-') && !modelID.startsWith('gpt-5.6-')) continue;
+			expect(model.limit).toEqual(expectedLimit);
+		}
+	});
+
 	it('updates existing JSONC and preserves comments', () => {
 		const homeDir = makeHome();
 		const configPath = writeConfig(
@@ -59,6 +88,8 @@ describe('Install script', () => {
 		expect(data.provider.openai.models['gpt-5.6-sol']).toBeDefined();
 		expect(data.provider.openai.models['gpt-5.6-terra']).toBeDefined();
 		expect(data.provider.openai.models['gpt-5.6-luna']).toBeDefined();
+		expect(data.provider.openai.models['gpt-6-sol']).toBeDefined();
+		expect(data.provider.openai.models['gpt-6-luna']).toBeDefined();
 	});
 
 	it('prefers JSONC when both jsonc and json exist', () => {

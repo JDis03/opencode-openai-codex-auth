@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here. Dates use the ISO format (YYYY-MM-DD).
 
+## [4.9.0] - 2026-09-22
+
+**Model release**: GPT-6 Sol/Luna, plus a safety net so future unrecognized models fail safe instead of silently downgrading.
+
+### Added
+- **gpt-6-sol** and **gpt-6-luna**: new models, added as two registry entries reusing the existing `gpt-5.6` prompt family (no changes needed to `request-transformer.ts` or `codex.ts` logic beyond the safety net below), plus config presets.
+  - **Verified live** against the ChatGPT Codex backend (not guessed): both are real API model ids, and both accept the full `none`/`minimal`/`low`/`medium`/`high`/`xhigh`/`max` reasoning range (same tiers as `gpt-5.6-sol`/`terra`/`luna`).
+  - Context window (`context: 1050000`, `input: 922000`, `output: 128000`) confirmed via models.dev's public catalog rather than assumed — and used to correct `gpt-6-astra`'s previously-provisional `272000`/`128000` limit to the same real 1.05M window.
+  - End-to-end verified through `opencode run --model=openai/gpt-6-sol` and `--model=openai/gpt-6-luna` against the local plugin build, both real `HTTP 200` completions.
+
+### Fixed
+- **Silent downgrade of unrecognized newer models**: `normalizeModel()`'s last-resort fallback had no pattern for model ids newer than `gpt-5.6` (e.g. `gpt-6-*`), so an unrecognized-but-well-formed id like `gpt-6-sol` — already selectable in OpenCode today because `models.dev`'s catalog and OpenCode's additive provider-config merge don't require any change on this plugin's side — was silently rewritten to `gpt-5.1` with no error at all. Added a version-aware safety net: a `gpt-N[.M]-*` id whose version is higher than anything this plugin's fallback chain recognizes (5.6) is now passed through to the real Codex backend unchanged instead of being downgraded. Older/legacy families (e.g. `gpt-4`) are unaffected and keep normalizing forward to `gpt-5.1` as before.
+- **GPT-5.6 effective input window**: Sol, Terra, and Luna presets now declare `input: 922000` alongside `context: 1050000` and `output: 128000`. Without the explicit input limit, OpenCode inherited a stale `272000` input cap from its model catalog, causing the UI and automatic compaction to behave as if the models only had a 272k input window.
+
 ## [4.8.0] - 2026-09-10
 
 **Quality release**: Codex sessions now get OpenCode's Skills catalog and MCP instructions, matching Anthropic session parity.

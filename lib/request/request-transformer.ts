@@ -145,6 +145,31 @@ export function normalizeModel(model: string | undefined): string {
 		return "gpt-5.1";
 	}
 
+	// 10. Safety net for a genuinely unrecognized model whose numeric version
+	// is NEWER than anything this plugin's pattern-matching knows about (e.g.
+	// a brand-new "gpt-7-nova" or "gpt-6-something" released before a registry
+	// entry was added for it — this is exactly what happened with gpt-6-sol
+	// and gpt-6-luna before they were added above). Passing the id through
+	// unchanged lets the real Codex backend decide whether it's valid, which
+	// is much safer than silently downgrading the request to a much older,
+	// weaker model with no error at all. Older/legacy families (e.g. "gpt-4")
+	// are intentionally NOT covered by this — they keep normalizing forward
+	// to gpt-5.1 via the final fallback below, matching existing migration
+	// behavior and every "unknown-model"/"gpt-4" test case.
+	const versionMatch = normalized.match(/^gpt[-\s]?(\d+)(?:\.(\d+))?/);
+	if (versionMatch) {
+		const major = parseInt(versionMatch[1], 10);
+		const minor = versionMatch[2] ? parseInt(versionMatch[2], 10) : 0;
+		const version = major + minor / 10;
+		// Highest major.minor version explicitly known to the pattern-matching
+		// chain above (registry-known models like gpt-6-astra never reach this
+		// point at all, since lookupModelRegistryEntry() already returned).
+		const HIGHEST_KNOWN_FALLBACK_VERSION = 5.6;
+		if (version > HIGHEST_KNOWN_FALLBACK_VERSION) {
+			return modelId;
+		}
+	}
+
 	// Default fallback - use gpt-5.1 as gpt-5 is being phased out
 	return "gpt-5.1";
 }

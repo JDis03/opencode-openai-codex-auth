@@ -9,6 +9,13 @@ describe("Codex Module", () => {
 			});
 		});
 
+		describe("GPT-6 Sol / Luna", () => {
+			it("reuses the gpt-5.6 prompt family (same behavior as gpt-5.6-sol/terra/luna, no dedicated gpt-6 prompt upstream yet)", () => {
+				expect(getModelFamily("gpt-6-sol")).toBe("gpt-5.6");
+				expect(getModelFamily("gpt-6-luna")).toBe("gpt-5.6");
+			});
+		});
+
 		describe("GPT-5.6 family", () => {
 			it("should use the shared GPT-5.6 prompt family for every tier", () => {
 				expect(getModelFamily("gpt-5.6-sol")).toBe("gpt-5.6");
