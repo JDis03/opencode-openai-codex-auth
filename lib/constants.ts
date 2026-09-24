@@ -73,6 +73,8 @@ export const PLATFORM_OPENERS = {
 export const AUTH_LABELS = {
 	OAUTH: "ChatGPT Plus/Pro (Codex Subscription)",
 	OAUTH_MANUAL: "ChatGPT Plus/Pro (Manual URL Paste)",
+	/** OpenCode 2 integration method label (distinct id from OpenCode's own built-in "chatgpt-browser"/"chatgpt-headless" methods). */
+	OAUTH_V2: "ChatGPT Plus/Pro (Codex Auth)",
 	API_KEY: "Manually enter API Key",
 	INSTRUCTIONS:
 		"A browser window should open. If it doesn't, copy the URL and open it manually.",

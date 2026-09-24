@@ -54,15 +54,22 @@ The main entry point orchestrates a **7-step fetch flow**:
 
 ### Module Organization
 
-**Core Plugin** (`index.ts`)
-- Plugin definition and main fetch orchestration
+**Core Plugin — V1** (`index.ts`)
+- Plugin definition and main fetch orchestration (OpenCode 1 API: bare async function default export)
 - OAuth loader (extracts ChatGPT account ID from JWT)
 - Configuration loading and CODEX_MODE determination
+- Published at the `opencode-openai-codex-auth/legacy` subpath (see pattern 9 below)
+
+**Core Plugin — V2** (`v2.ts`)
+- Plugin definition using OpenCode 2's API (`Plugin.define({ id, setup(ctx) {...} })`)
+- Reuses every `lib/` module below unchanged; only the glue layer differs (native `http.request`/`http.response` session hooks instead of a custom `fetch()` override, `ctx.integration.transform` instead of the V1 `auth` hook)
+- Published at the package root (see pattern 9 below)
 
 **Authentication** (`lib/auth/`)
-- `auth.ts`: OAuth flow (PKCE, token exchange, JWT decoding, refresh)
-- `server.ts`: Local HTTP server for OAuth callback (port 1455)
-- `browser.ts`: Platform-specific browser opening
+- `auth.ts`: OAuth flow (PKCE, token exchange, JWT decoding, refresh) — shared by both `index.ts` and `v2.ts`
+- `server.ts`: Local HTTP server for OAuth callback (port 1455) — shared
+- `browser.ts`: Platform-specific browser opening — shared
+- `v2-storage.ts`: OpenCode 2-only. Small file-based OAuth credential store (`~/.opencode/openai-codex-v2-credentials.json`) with a read-only legacy `auth.json` import fallback — needed because V2's plugin API has no public way to import an existing OAuth credential into its own built-in connection store
 
 **Request Handling** (`lib/request/`)
 - `fetch-helpers.ts`: 10 focused helper functions for main fetch flow
@@ -135,6 +142,13 @@ The main entry point orchestrates a **7-step fetch flow**:
 - Separate cache files per family: `gpt-5.2-codex-instructions.md`, `codex-max-instructions.md`, `codex-instructions.md`, `gpt-5.2-instructions.md`, `gpt-5.1-instructions.md`
 - Cache invalidation when release tag changes
 - Falls back to bundled version if GitHub unavailable
+
+**9. OpenCode 2 Dual Plugin Entrypoint** (V1 + V2 from one package):
+- OpenCode 2 has a new, incompatible plugin API — a V1 plugin (bare async function default export, what `index.ts` has always been) is rejected with a schema error before any of its code runs; it does not degrade gracefully. Confirmed live against a real OpenCode 2.0.15 host: other V1-shaped plugins in the same environment fail with `PluginModule.LoadError: ... SchemaError(Expected object at ["default"])`.
+- `package.json`'s `exports` field resolves the package root (`opencode-openai-codex-auth`) to the new `v2.ts` build (`dist/v2.js`), and `opencode-openai-codex-auth/legacy` to the unchanged V1 build (`dist/index.js`), matching the same dual-export pattern this maintainer's separate Anthropic plugin (`opencode-anthropic-dark-auth`) already validated live.
+- `v2.ts` reuses every `lib/` business-logic module unchanged (model registry, Codex instructions, CODEX_MODE bridge, skill-catalog passthrough, SSE→JSON conversion) — the port only replaces the *glue*: `ctx.session.hook("http.request" | "http.response", ..., { providerID: "openai" })` instead of a custom `fetch()`, and `ctx.integration.transform(...)` (registering this plugin's own OAuth method, `id: "codex-auth"`) instead of the V1 `auth` hook.
+- **Important caveat, not specific to this plugin**: OpenCode 2 ships its own built-in ChatGPT/Codex OAuth handling for the `openai` integration (`chatgpt-browser`/`chatgpt-headless` methods) that can silently make basic model access "work" even while this plugin is completely absent from `opencode plugin list` — but without Codex instructions, the CODEX_MODE bridge, or model-registry reasoning normalization. A user must explicitly complete this plugin's own OAuth method (`opencode auth login` → `openai` → `ChatGPT Plus/Pro (Codex Auth)`) for OpenCode 2 to route through it; V2's plugin API has no public way to activate an integration connection from an imported credential alone.
+- See `specs/opencode-v2-plugin-port.md` for the full root-cause investigation and design rationale, and `test/v2.test.ts` for hook-level test coverage.
 
 **8. OpenCode Capability Block Passthrough** (Skills + MCP parity with Anthropic sessions):
 - opencode's `isOpenaiOauth` branch (`session/llm/request.ts` in opencode core) puts the *entire* joined system prompt — including the `<available_skills>` catalog and `<mcp_instructions>` block — into `body.instructions` instead of `role:"system"` messages (every other provider/auth combo gets the latter). `transformRequestBody()` used to unconditionally overwrite `body.instructions` with the official Codex CLI instructions, silently discarding both blocks before Codex ever saw them — confirmed empirically via `ENABLE_PLUGIN_REQUEST_LOGGING=1` (real request: `<available_skills>`/`<mcp_instructions>` both present pre-overwrite, absent after).

@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. Dates use the ISO format (YYYY-MM-DD).
 
+## [4.10.0] - 2026-09-24
+
+**Compatibility release**: OpenCode 2 native plugin port.
+
+### Added
+- **OpenCode 2 support**: new `v2.ts` entrypoint using the V2 plugin API (`Plugin.define({ id, setup(ctx) {...} })`), shipped alongside the unchanged V1 entrypoint via `package.json`'s dual `exports` — the package root now resolves to the V2 build (`dist/v2.js`); `opencode-openai-codex-auth/legacy` resolves to the original V1 build (`dist/index.js`) for anyone still on OpenCode 1. Every existing `lib/` business-logic module (model registry, Codex instructions, CODEX_MODE bridge, skill-catalog passthrough, SSE→JSON conversion) is reused unchanged — only the glue layer (HTTP interception, OAuth registration) was rewritten for V2's API.
+  - Replaces the V1 custom `fetch()` override with native `ctx.session.hook("http.request" | "http.response", ..., { providerID: "openai" })` hooks.
+  - Registers this plugin's own OAuth integration method (**ChatGPT Plus/Pro (Codex Auth)**) alongside OpenCode 2's built-in `chatgpt-browser`/`chatgpt-headless` methods, reusing the exact same PKCE flow, local callback server, and browser opener as V1. New `lib/auth/v2-storage.ts` provides a small file-based credential store (V2's plugin API has no way to import an existing OAuth credential into its own built-in connection store), with a best-effort read-only import of any existing V1 `auth.json` credential on first use.
+  - New `test/v2.test.ts` (13 tests) covering request filtering, URL rewriting, header assembly, body transformation, proactive token refresh, and response routing — all 289 tests pass (276 pre-existing + 13 new), `npm run typecheck` and `npm run build` clean.
+  - Full root-cause investigation (confirmed empirically against a live OpenCode 2.0.15 host, not guessed) in `specs/opencode-v2-plugin-port.md`, including why a request could silently appear to "work" even with this plugin completely absent from `opencode plugin list` (OpenCode 2's own built-in Codex handling, which does **not** apply this plugin's Codex instructions, CODEX_MODE bridge, or model-registry reasoning normalization).
+  - **Migration note for existing users on OpenCode 2**: installing this version alone is not enough — run `opencode auth login`, select `openai` → `ChatGPT Plus/Pro (Codex Auth)`, and complete the login once so OpenCode 2 treats `openai` as actively connected through this plugin (a V2 API limitation, not specific to this plugin — see spec for details).
+
 ## [4.9.0] - 2026-09-22
 
 **Model release**: GPT-6 Sol/Luna, plus a safety net so future unrecognized models fail safe instead of silently downgrading.

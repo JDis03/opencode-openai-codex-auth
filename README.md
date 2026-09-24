@@ -43,6 +43,38 @@ npx -y opencode-openai-codex-auth@latest --uninstall
 npx -y opencode-openai-codex-auth@latest --uninstall --all
 ```
 ---
+## 🆕 OpenCode 2
+OpenCode 2 uses a completely new plugin API — V1 plugins (including every release of this
+package before this one) do not load at all under OpenCode 2, they fail a schema check
+before any of their code runs. This package now ships a native V2 entrypoint alongside the
+unchanged V1 one, auto-selected by `exports`:
+
+- The package root (`opencode-openai-codex-auth`) resolves to the **V2** implementation.
+- `opencode-openai-codex-auth/legacy` resolves to the **original V1** implementation, for
+  anyone still running OpenCode 1.
+
+**How it works under V2**: OpenCode 2 ships its own built-in ChatGPT/Codex OAuth handling
+for the `openai` integration (the `ChatGPT Pro/Plus (browser/headless)` methods you may
+already see in `opencode auth login`) — but that native path does **not** apply Codex CLI
+system instructions, the CODEX_MODE bridge prompt, model-registry-based reasoning
+normalization, or the Skills/MCP passthrough this plugin has always provided. This plugin's
+V2 build registers native `http.request`/`http.response` session hooks (scoped to the
+`openai` provider) to keep applying all of that, plus its **own** OAuth integration method —
+**ChatGPT Plus/Pro (Codex Auth)** — with a stable file-based credential store, since V2's
+plugin API has no way to import an existing OAuth credential into its built-in connection
+store.
+
+**You must complete this plugin's own OAuth method once** for `openai` to route through it:
+```bash
+opencode auth login
+# select "openai" → "ChatGPT Plus/Pro (Codex Auth)"
+```
+Merely installing the plugin (or already being logged in via OpenCode 2's native ChatGPT
+methods) is not enough — an existing V1 `auth.json` credential is imported automatically as
+a read-only fallback for token use, but it cannot make OpenCode 2 treat `openai` as
+"actively connected" through this plugin's method; only completing that method's login flow
+does. See `specs/opencode-v2-plugin-port.md` for the full root-cause investigation.
+---
 ## 📦 Models
 - **gpt-6-astra** (low/medium/high/xhigh/max; `gpt-6` alias) — no `none` support
 - **gpt-6-sol** (none/low/medium/high/xhigh/max)
