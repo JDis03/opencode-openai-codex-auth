@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented here. Dates use the ISO format (YYYY-MM-DD).
 
+## [4.10.1] - 2026-09-25
+
+**First scoped npm release** as `@darkjd/opencode-openai-codex-auth` (the original unscoped name is owned by the upstream maintainer). Install on OpenCode 2 with `opencode plugin add @darkjd/opencode-openai-codex-auth` and authenticate using this plugin's OAuth method.
+
+- Declare `@opencode/plugin` as a runtime dependency so the published V2 entrypoint resolves outside this repository.
+- Route OpenAI Responses requests to the actual ChatGPT Codex endpoint. The V2 HTTP hook previously rewrote `/v1/responses` to `/v1/codex/responses` on `api.openai.com`; it now targets `https://chatgpt.com/backend-api/codex/responses` and leaves existing Codex URLs unchanged.
+- Remove the OpenCode 1 installer and configuration templates from the scoped npm tarball. They remain in the repository for historical V1 users; using them with OpenCode 2 would select the upstream package or an unsupported plugin path. Update the README with OpenCode 2 installation commands.
+
 ## [4.10.0] - 2026-09-24
 
 **Compatibility release**: OpenCode 2 native plugin port.

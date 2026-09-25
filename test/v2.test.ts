@@ -114,7 +114,19 @@ describe('OpenCode 2 native HTTP hooks (createV2Hooks)', () => {
 
 			await hooks.request(event);
 
-			expect(event.request.url).toBe('https://api.openai.com/v1/codex/responses');
+			expect(event.request.url).toBe('https://chatgpt.com/backend-api/codex/responses');
+		});
+
+		it('does not duplicate the Codex path when OpenCode already targets it', async () => {
+			const hooks = createV2Hooks();
+			const event = makeRequestEvent(
+				{ model: 'gpt-6-sol', input: [] },
+				'https://chatgpt.com/backend-api/codex/responses',
+			);
+
+			await hooks.request(event);
+
+			expect(event.request.url).toBe('https://chatgpt.com/backend-api/codex/responses');
 		});
 
 		it('sets Codex headers: Authorization, chatgpt-account-id, OpenAI-Beta, originator', async () => {

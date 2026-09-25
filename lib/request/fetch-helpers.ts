@@ -13,6 +13,7 @@ import { convertSseToJson, ensureContentType } from "./response-handler.js";
 import type { UserConfig, RequestBody } from "../types.js";
 import {
 	PLUGIN_NAME,
+	CODEX_BASE_URL,
 	HTTP_STATUS,
 	OPENAI_HEADERS,
 	OPENAI_HEADER_VALUES,
@@ -85,7 +86,17 @@ export function extractRequestUrl(input: Request | string | URL): string {
  * @returns Rewritten URL for Codex backend
  */
 export function rewriteUrlForCodex(url: string): string {
-	return url.replace(URL_PATHS.RESPONSES, URL_PATHS.CODEX_RESPONSES);
+	const original = new URL(url);
+	const responsesPaths = new Set([
+		`/v1${URL_PATHS.RESPONSES}`,
+		`/backend-api${URL_PATHS.RESPONSES}`,
+		`/backend-api${URL_PATHS.CODEX_RESPONSES}`,
+	]);
+	if (!responsesPaths.has(original.pathname)) return url;
+
+	const codexUrl = new URL(`${CODEX_BASE_URL}${URL_PATHS.CODEX_RESPONSES}`);
+	codexUrl.search = original.search;
+	return codexUrl.toString();
 }
 
 /**

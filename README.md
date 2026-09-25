@@ -7,41 +7,31 @@
 
 [![Twitter Follow](https://img.shields.io/twitter/follow/nummanali?style=social)](https://x.com/nummanali)
 [![Tests](https://github.com/JDis03/opencode-openai-codex-auth/actions/workflows/ci.yml/badge.svg)](https://github.com/JDis03/opencode-openai-codex-auth/actions)
-**One install. Every Codex model.**
+**OpenCode 2 + ChatGPT Codex OAuth.**
 [Install](#-quick-start) · [Models](#-models) · [Configuration](#-configuration) · [Docs](#-docs)
 
 ---
 ## 💡 Philosophy
 > **"One config. Every model."**
-OpenCode should feel effortless. This plugin keeps the setup minimal while giving you full GPT‑5.x + Codex access via ChatGPT OAuth.
+OpenCode should feel effortless. This plugin connects OpenCode 2 to ChatGPT Codex OAuth, with bundled model presets and request transformations.
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                                                         │
 │  ChatGPT OAuth → Codex backend → OpenCode               │
-│  One command install, full model presets, done.         │
+│  Install the plugin, connect, then choose a model.      │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 ---
 ## 🚀 Quick Start
 ```bash
-npx -y opencode-openai-codex-auth@latest
-```
-Then:
-```bash
+opencode plugin add @darkjd/opencode-openai-codex-auth
 opencode auth login
-opencode run "write hello world to test.txt" --model=openai/gpt-5.2 --variant=medium
+# Choose openai → "ChatGPT Plus/Pro (Codex Auth)"
+opencode run --model 'openai/gpt-6-sol#medium' "Say hello"
 ```
-Legacy OpenCode (v1.0.209 and below):
-```bash
-npx -y opencode-openai-codex-auth@latest --legacy
-opencode run "write hello world to test.txt" --model=openai/gpt-5.2-medium
-```
-Uninstall:
-```bash
-npx -y opencode-openai-codex-auth@latest --uninstall
-npx -y opencode-openai-codex-auth@latest --uninstall --all
-```
+
+OpenCode 2 installs packages from its `plugins` configuration. The old `npx opencode-openai-codex-auth` installer writes OpenCode 1 config and is **not** bundled with this scoped OpenCode 2 package. To remove the plugin, use `opencode plugin remove @darkjd/opencode-openai-codex-auth`. Existing OpenCode 1 users should keep their working 4.9.0 installation; the V1 entrypoint remains exported as `@darkjd/opencode-openai-codex-auth/legacy` for manual integrations.
 ---
 ## 🆕 OpenCode 2
 OpenCode 2 uses a completely new plugin API — V1 plugins (including every release of this
@@ -49,8 +39,8 @@ package before this one) do not load at all under OpenCode 2, they fail a schema
 before any of their code runs. This package now ships a native V2 entrypoint alongside the
 unchanged V1 one, auto-selected by `exports`:
 
-- The package root (`opencode-openai-codex-auth`) resolves to the **V2** implementation.
-- `opencode-openai-codex-auth/legacy` resolves to the **original V1** implementation, for
+- The package root (`@darkjd/opencode-openai-codex-auth`) resolves to the **V2** implementation.
+- `@darkjd/opencode-openai-codex-auth/legacy` resolves to the **original V1** implementation, for
   anyone still running OpenCode 1.
 
 **How it works under V2**: OpenCode 2 ships its own built-in ChatGPT/Codex OAuth handling
@@ -102,10 +92,7 @@ These are separate model IDs, not reasoning variants. They are visible in the lo
 
 ---
 ## 🧩 Configuration
-- Modern (OpenCode v1.0.210+): `config/opencode-modern.json`
-- Legacy (OpenCode v1.0.209 and below): `config/opencode-legacy.json`
-
-Minimal configs are not supported for GPT‑5.x; use the full configs above.
+OpenCode 2 installs the plugin with `opencode plugin add` and obtains its model catalog from OpenCode; no OpenCode 1 config template is needed. The repository's `config/opencode-modern.json` and `config/opencode-legacy.json` are historical **OpenCode 1 examples** and are not shipped in the scoped npm package. Do not paste their `plugin` entry into OpenCode 2.
 ---
 ## 🔄 Model Registry (maintainer notes)
 Model normalization, reasoning capabilities, and prompt-family selection are

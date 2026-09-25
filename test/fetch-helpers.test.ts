@@ -102,20 +102,26 @@ describe('Fetch Helpers Module', () => {
 	});
 
 	describe('rewriteUrlForCodex', () => {
-		it('should rewrite /responses to /codex/responses', () => {
+		it('rewrites the legacy ChatGPT URL to the Codex endpoint', () => {
 			const url = 'https://chatgpt.com/backend-api/responses';
 			expect(rewriteUrlForCodex(url)).toBe('https://chatgpt.com/backend-api/codex/responses');
 		});
 
-		it('should not modify URL without /responses', () => {
-			const url = 'https://chatgpt.com/backend-api/other';
+		it('rewrites the Platform URL to the ChatGPT Codex endpoint', () => {
+			const url = 'https://api.openai.com/v1/responses?foo=bar';
+			expect(rewriteUrlForCodex(url)).toBe('https://chatgpt.com/backend-api/codex/responses?foo=bar');
+		});
+
+		it('leaves an existing Codex URL unchanged', () => {
+			const url = 'https://chatgpt.com/backend-api/codex/responses';
 			expect(rewriteUrlForCodex(url)).toBe(url);
 		});
 
-		it('should only replace first occurrence', () => {
-			const url = 'https://example.com/responses/responses';
-			const result = rewriteUrlForCodex(url);
-			expect(result).toBe('https://example.com/codex/responses/responses');
+		it('does not modify unrelated URLs', () => {
+			const url = 'https://chatgpt.com/backend-api/other';
+			expect(rewriteUrlForCodex(url)).toBe(url);
+			expect(rewriteUrlForCodex('https://example.com/responses/responses'))
+				.toBe('https://example.com/responses/responses');
 		});
 	});
 
