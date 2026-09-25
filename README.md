@@ -89,11 +89,16 @@ does. See `specs/opencode-v2-plugin-port.md` for the full root-cause investigati
 - **gpt-5.1-codex-mini** (medium/high)
 - **gpt-5.1** (none/low/medium/high)
 
-### Model catalog visibility
+### Additional GPT-6 catalog IDs
 
-OpenCode and CodeNomad can display models from their merged provider catalog, while Codex CLI uses the model catalog returned for the signed-in account. These lists may differ, and a model appearing in a selector does not by itself confirm that the ChatGPT Codex backend accepts its ID.
+CodeNomad/OpenCode currently lists these GPT-6 variants:
 
-As checked on 2026-09-25, the local OpenCode `/api/model` catalog included `gpt-6-sol-pro`, `gpt-6-sol-fast`, `gpt-6-luna-pro`, and `gpt-6-luna-fast`. The authenticated Codex CLI catalog (`codex debug models`, Codex CLI 0.156.1) contained `gpt-6-sol` and `gpt-6-luna`, but none of those four Pro/Fast IDs. The public models.dev catalog also did not contain those four IDs at that time. They are therefore **not listed here as verified plugin-supported models**; backend availability and reasoning options require direct API verification. The base `gpt-6-sol` and `gpt-6-luna` IDs are supported and were verified separately.
+- `gpt-6-sol-pro`
+- `gpt-6-sol-fast`
+- `gpt-6-luna-pro`
+- `gpt-6-luna-fast`
+
+These are separate model IDs, not reasoning variants. They are visible in the local OpenCode catalog, but are **not yet verified by this plugin against the ChatGPT Codex backend**. The current Codex CLI account catalog lists the base `gpt-6-sol` and `gpt-6-luna` models, but not these four IDs.
 
 ---
 ## 🧩 Configuration
