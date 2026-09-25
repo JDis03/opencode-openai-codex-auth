@@ -26,16 +26,20 @@ OpenCode should feel effortless. This plugin connects OpenCode 2 to ChatGPT Code
 ## 🚀 Quick Start
 ```bash
 opencode plugin add @darkjd/opencode-openai-codex-auth
+opencode plugin list
+# Confirm: opencode-openai-codex-auth  4.10.1  @darkjd/opencode-openai-codex-auth
 opencode auth login
 # Choose openai → "ChatGPT Plus/Pro (Codex Auth)"
 opencode run --model 'openai/gpt-6-sol#medium' "Say hello"
 ```
 
-OpenCode 2 installs packages from its `plugins` configuration. The old `npx opencode-openai-codex-auth` installer writes OpenCode 1 config and is **not** bundled with this scoped OpenCode 2 package. To remove the plugin, use `opencode plugin remove @darkjd/opencode-openai-codex-auth`. Existing OpenCode 1 users should keep their working 4.9.0 installation; the V1 entrypoint remains exported as `@darkjd/opencode-openai-codex-auth/legacy` for manual integrations.
+OpenCode 2 installs packages from its `plugins` configuration. The old `npx opencode-openai-codex-auth` installer writes OpenCode 1 config and is **not** bundled with this scoped OpenCode 2 package. To remove the package, use `opencode plugin remove @darkjd/opencode-openai-codex-auth`.
+
+If `opencode plugin list` shows `opencode-openai-codex-auth` twice or reports `Duplicate plugin ID`, remove any older local shim you installed under `~/.config/opencode/plugins/` or `.opencode/plugins/` before using the npm package. Removing the npm package will not remove those local files. OpenCode 1 users should keep their working legacy installation; the V1 entrypoint is also exported as `@darkjd/opencode-openai-codex-auth/legacy` for manual integrations.
 ---
 ## 🆕 OpenCode 2
-OpenCode 2 uses a completely new plugin API — V1 plugins (including every release of this
-package before this one) do not load at all under OpenCode 2, they fail a schema check
+OpenCode 2 uses a completely new plugin API — V1 plugins (including earlier versions of
+this fork) do not load at all under OpenCode 2; they fail a schema check
 before any of their code runs. This package now ships a native V2 entrypoint alongside the
 unchanged V1 one, auto-selected by `exports`:
 
