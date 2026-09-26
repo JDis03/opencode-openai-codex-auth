@@ -114,6 +114,7 @@ export async function transformRequestForCodex(
 	url: string,
 	userConfig: UserConfig,
 	codexMode = true,
+	toolBridgeMessage?: string,
 ): Promise<{ body: RequestBody; updatedInit: RequestInit } | undefined> {
 	if (!init?.body) return undefined;
 
@@ -147,6 +148,7 @@ export async function transformRequestForCodex(
 			codexInstructions,
 			userConfig,
 			codexMode,
+			toolBridgeMessage,
 		);
 
 		// Log transformed request

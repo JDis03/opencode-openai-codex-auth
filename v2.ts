@@ -77,6 +77,21 @@ function isResponsesRequest(request: Request): boolean {
 	}
 }
 
+/** Build guidance from this request's real V2 tool names, not the V1 tool list. */
+export function v2ToolBridge(tools: unknown): string {
+	const names = Array.isArray(tools)
+		? tools.map((tool) => tool?.name).filter((name): name is string => typeof name === "string")
+		: [];
+	return [
+		"# Codex running in OpenCode 2",
+		`Available tools for this request: ${names.join(", ") || "none"}.`,
+		"Use only tools actually supplied in this request; follow their schemas rather than remembered Codex CLI or OpenCode 1 tool names.",
+		...(names.includes("patch") ? ["For file changes use the patch tool; do not call write, edit, or apply_patch unless separately supplied."] : []),
+		...(names.includes("shell") ? ["For commands use the shell tool; do not call bash unless separately supplied."] : []),
+		"Check the available skills catalog for a matching skill before non-trivial work. MCP tools and subagents may be available through the provided tool schemas.",
+	].join("\n");
+}
+
 function toOAuthCredential(creds: V2Credentials): Credential.OAuth {
 	return {
 		type: "oauth",
@@ -174,6 +189,7 @@ export function createV2Hooks() {
 			url,
 			userConfig,
 			codexMode,
+			v2ToolBridge(parsedBody.tools),
 		);
 		const transformedBody = transformation?.body;
 		const finalBody = transformedBody

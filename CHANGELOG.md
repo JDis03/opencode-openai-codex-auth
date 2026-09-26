@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here. Dates use the ISO format (YYYY-MM-DD).
 
+## [4.10.2] - 2026-09-25
+
+- Fix OpenCode 2 tool guidance: the V1 Codex bridge instructed models to call `write`/`edit` even when OpenCode 2 supplied `patch` and `shell`. Build the V2 bridge from the actual tools in each request, while preserving the V1 prompt for legacy sessions.
+
 ## [4.10.1] - 2026-09-25
 
 **First scoped npm release** as `@darkjd/opencode-openai-codex-auth` (the original unscoped name is owned by the upstream maintainer). Install on OpenCode 2 with `opencode plugin add @darkjd/opencode-openai-codex-auth` and authenticate using this plugin's OAuth method.

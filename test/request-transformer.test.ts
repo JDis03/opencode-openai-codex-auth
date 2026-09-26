@@ -1239,6 +1239,16 @@ describe('Request Transformer Module', () => {
 		});
 
 		describe('CODEX_MODE parameter', () => {
+			it('uses a host-specific bridge when provided for OpenCode 2', async () => {
+				const body: RequestBody = {
+					model: 'gpt-6-astra',
+					input: [{ type: 'message', role: 'user', content: 'hello' }],
+					tools: [{ name: 'patch' }],
+				};
+				const result = await transformRequestBody(body, codexInstructions, undefined, true, 'Use patch for edits.');
+				expect((result.input![0].content as any)[0].text).toBe('Use patch for edits.');
+			});
+
 			it('should use bridge message when codexMode=true and tools present (default)', async () => {
 				const body: RequestBody = {
 					model: 'gpt-5',

@@ -474,6 +474,7 @@ export async function filterOpenCodeSystemPrompts(
 export function addCodexBridgeMessage(
 	input: InputItem[] | undefined,
 	hasTools: boolean,
+	message = CODEX_OPENCODE_BRIDGE,
 ): InputItem[] | undefined {
 	if (!hasTools || !Array.isArray(input)) return input;
 
@@ -483,7 +484,7 @@ export function addCodexBridgeMessage(
 		content: [
 			{
 				type: "input_text",
-				text: CODEX_OPENCODE_BRIDGE,
+				text: message,
 			},
 		],
 	};
@@ -500,6 +501,7 @@ export function addCodexBridgeMessage(
 export function addToolRemapMessage(
 	input: InputItem[] | undefined,
 	hasTools: boolean,
+	message = TOOL_REMAP_MESSAGE,
 ): InputItem[] | undefined {
 	if (!hasTools || !Array.isArray(input)) return input;
 
@@ -509,7 +511,7 @@ export function addToolRemapMessage(
 		content: [
 			{
 				type: "input_text",
-				text: TOOL_REMAP_MESSAGE,
+				text: message,
 			},
 		],
 	};
@@ -536,6 +538,7 @@ export async function transformRequestBody(
 	codexInstructions: string,
 	userConfig: UserConfig = { global: {}, models: {} },
 	codexMode = true,
+	toolBridgeMessage?: string,
 ): Promise<RequestBody> {
 	const originalModel = body.model;
 	const normalizedModel = normalizeModel(body.model);
@@ -606,10 +609,10 @@ export async function transformRequestBody(
 		if (codexMode) {
 			// CODEX_MODE: Remove OpenCode system prompt, add bridge prompt
 			body.input = await filterOpenCodeSystemPrompts(body.input);
-			body.input = addCodexBridgeMessage(body.input, !!body.tools);
+			body.input = addCodexBridgeMessage(body.input, !!body.tools, toolBridgeMessage);
 		} else {
 			// DEFAULT MODE: Keep original behavior with tool remap message
-			body.input = addToolRemapMessage(body.input, !!body.tools);
+			body.input = addToolRemapMessage(body.input, !!body.tools, toolBridgeMessage);
 		}
 
 		// Handle orphaned function_call_output items (where function_call was an item_reference that got filtered)

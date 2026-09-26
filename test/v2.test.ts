@@ -54,7 +54,7 @@ vi.mock('../lib/request/helpers/model-registry.js', () => ({
 	configureModelRegistrySource: vi.fn(),
 }));
 
-import { createV2Hooks } from '../v2.js';
+import { createV2Hooks, v2ToolBridge } from '../v2.js';
 import {
 	importLegacyV1Credentials,
 	loadV2Credentials,
@@ -96,6 +96,13 @@ afterEach(() => {
 });
 
 describe('OpenCode 2 native HTTP hooks (createV2Hooks)', () => {
+	it('describes the supplied V2 patch tool, not the V1 edit/write tools', () => {
+		const bridge = v2ToolBridge([{ name: 'patch' }, { name: 'shell' }]);
+		expect(bridge).toContain('Available tools for this request: patch, shell');
+		expect(bridge).toContain('For file changes use the patch tool');
+		expect(bridge).not.toContain('USE "edit" INSTEAD');
+	});
+
 	describe('request()', () => {
 		it('ignores non-Responses-API requests entirely', async () => {
 			const hooks = createV2Hooks();
@@ -143,11 +150,12 @@ describe('OpenCode 2 native HTTP hooks (createV2Hooks)', () => {
 
 		it('transforms the body through transformRequestForCodex', async () => {
 			const hooks = createV2Hooks();
-			const event = makeRequestEvent({ model: 'gpt-5-codex', input: [] });
+			const event = makeRequestEvent({ model: 'gpt-5-codex', input: [], tools: [{ name: 'patch' }] });
 
 			await hooks.request(event);
 
 			expect(transformRequestForCodex).toHaveBeenCalled();
+			expect(vi.mocked(transformRequestForCodex).mock.calls[0][4]).toContain('For file changes use the patch tool');
 			const sentBody = JSON.parse(await event.request.clone().text());
 			expect(sentBody.model).toBe('gpt-6-sol');
 		});
